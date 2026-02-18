@@ -1,28 +1,28 @@
 {
-  "telegram_token": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
+  "telegram_token": "123456789:GlobalTokenDefaultsToThis",
   "database_path": "data/feedbot.db",
   "log_level": "INFO",
   "feeds": [
     {
-      "name": "Новости IT",
+      "name": "Новости IT (Global Bot)",
       "url": "https://habr.com/rss/interesting/",
       "target_chat_id": "@my_it_channel",
       "check_interval": 600,
       "message_template": "📢 **{title}**\n\n{link}\n#habr #it"
     },
     {
-      "name": "YouTube Канал",
+      "name": "Другой канал (Свой токен)",
       "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCxxxxxxxxxxxxxxx",
+      "telegram_token": "987654321:SpecificTokenForThisFeedOnly",
       "target_chat_id": -1009876543210,
       "check_interval": 1800,
       "message_template": "🎥 Новое видео на канале!\n\n**{title}**\n\nСмотреть: {link}"
     },
     {
-      "name": "Личный Блог",
+      "name": "Личный Блог (Пример ID)",
       "url": "https://example.com/feed.xml",
       "target_chat_id": 12345678,
-      "check_interval": 3600,
-      "message_template": "📝 **{title}**\nАвтор: {author}\nОпубликовано: {published}\n\nЧитать: {link}"
+      "message_template": "📝 **{title}**"
     }
   ]
 }

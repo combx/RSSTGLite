@@ -7,6 +7,7 @@ class FeedConfig(BaseModel):
     name: str = Field(..., description="Human-readable name for the feed")
     url: HttpUrl = Field(..., description="URL of the RSS/Atom feed")
     target_chat_id: Union[int, str] = Field(..., description="Target Telegram chat ID (integer) or username (string)")
+    telegram_token: Union[str, None] = Field(default=None, description="Optional: specific bot token for this feed")
     check_interval: int = Field(default=600, ge=60, description="Check interval in seconds (min 60)")
     message_template: str = Field(
         default="📢 **{title}**\n\n{link}",

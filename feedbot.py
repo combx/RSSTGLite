@@ -100,8 +100,11 @@ class FeedBot:
         # Prepare message
         message = self.format_message(feed_config.message_template, entry, cleaned_link)
         
+        # Determine token: Use feed-specific if set, else global
+        token = feed_config.telegram_token or self.config.telegram_token
+
         # Send to Telegram
-        if await self.send_telegram_message(session, feed_config.target_chat_id, message):
+        if await self.send_telegram_message(session, feed_config.target_chat_id, message, token):
             # Mark as seen ONLY if sent successfully
             published_parsed = getattr(entry, 'published_parsed', None)
             published_at = datetime.fromtimestamp(mktime(published_parsed)) if published_parsed else datetime.now()
@@ -129,9 +132,13 @@ class FeedBot:
             published=published
         )
 
-    async def send_telegram_message(self, session: aiohttp.ClientSession, chat_id: str, text: str) -> bool:
+    async def send_telegram_message(self, session: aiohttp.ClientSession, chat_id: str, text: str, token: str) -> bool:
         """Send message to Telegram."""
-        url = f"https://api.telegram.org/bot{self.config.telegram_token}/sendMessage"
+        if not token:
+             logger.error("No Telegram token provided for this feed.")
+             return False
+
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {
             "chat_id": chat_id,
             "text": text,
