@@ -1,0 +1,9 @@
+services:
+  feedbot:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+    environment:
+      - TZ=UTC
