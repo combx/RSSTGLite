@@ -16,20 +16,40 @@
 
 ## Установка и запуск
 
-### Через Docker (Рекомендуется)
+### На чистом сервере Ubuntu (с нуля)
 
-1.  Клонируйте репозиторий.
-2.  Создайте конфигурацию:
+1.  **Обновите систему и установите Docker + Docker Compose:**
+    ```bash
+    sudo apt update && sudo apt upgrade -y
+    sudo apt install docker.io docker-compose -y
+    sudo systemctl enable --now docker
+    ```
+
+2.  **Клонируйте репозиторий:**
+    ```bash
+    git clone https://github.com/combx/RSSTGLite.git
+    cd RSSTGLite
+    ```
+
+3.  **Создайте конфигурацию:**
     ```bash
     cp sample_config.json config.json
+    nano config.json
     ```
-3.  Отредактируйте `config.json`, указав токен бота и ваши фиды.
-4.  Запустите:
+    *Отредактируйте файл, вставив свои токены и ссылки.*
+
+4.  **Запустите бота:**
     ```bash
-    docker-compose up -d --build
+    sudo docker-compose up -d --build
+    ```
+    *Флаг `-d` запускает контейнер в фоне.*
+
+5.  **Проверка работы:**
+    ```bash
+    sudo docker-compose logs -f
     ```
 
-### Локальный запуск (Python 3.11+)
+### Локальный запуск (без Docker)
 
 1.  Установите зависимости:
     ```bash
