@@ -3,7 +3,8 @@ import logging
 import signal
 import sys
 from datetime import datetime, timezone
-from time import mktime
+from datetime import datetime
+from time import mktime, time
 
 import aiohttp
 import feedparser
@@ -24,6 +25,8 @@ class FeedBot:
         self.config = AppConfig.load(config_path)
         logger.setLevel(self.config.log_level)
         self.db = Database(self.config.database_path)
+        self.lock = asyncio.Lock()
+        self.last_published_time = 0.0
         self.running = True
 
     async def start(self):
@@ -98,21 +101,37 @@ class FeedBot:
             return
 
         # Prepare message
-        message = self.format_message(feed_config.message_template, entry, cleaned_link)
+        message = self.format_message(
+            feed_config.message_template, 
+            entry, 
+            cleaned_link, 
+            rhash=feed_config.rhash
+        )
         
         # Determine token: Use feed-specific if set, else global
         token = feed_config.telegram_token or self.config.telegram_token
 
-        # Send to Telegram
-        if await self.send_telegram_message(session, feed_config.target_chat_id, message, token):
-            # Mark as seen ONLY if sent successfully
-            published_parsed = getattr(entry, 'published_parsed', None)
-            published_at = datetime.fromtimestamp(mktime(published_parsed)) if published_parsed else datetime.now()
-            
-            await self.db.add_entry(entry_id, cleaned_link, published_at)
-            logger.info(f"Posted new entry from {feed_config.name}: {entry.get('title', 'No Title')}")
+        # Send to Telegram with Rate Limiting
+        async with self.lock:
+            # Check time since last publication
+            now = time()
+            elapsed = now - self.last_published_time
+            if elapsed < self.config.publication_delay:
+                wait_time = self.config.publication_delay - elapsed
+                logger.debug(f"Rate limit: waiting {wait_time:.2f}s")
+                await asyncio.sleep(wait_time)
 
-    def format_message(self, template: str, entry: any, link: str) -> str:
+            if await self.send_telegram_message(session, feed_config.target_chat_id, message, token):
+                self.last_published_time = time()
+                
+                # Mark as seen ONLY if sent successfully
+                published_parsed = getattr(entry, 'published_parsed', None)
+                published_at = datetime.fromtimestamp(mktime(published_parsed)) if published_parsed else datetime.now()
+                
+                await self.db.add_entry(entry_id, cleaned_link, published_at)
+                logger.info(f"Posted new entry from {feed_config.name}: {entry.get('title', 'No Title')}")
+
+    def format_message(self, template: str, entry: any, link: str, rhash: str = None) -> str:
         """Format the message using the template."""
         title = getattr(entry, 'title', 'No Title')
         author = getattr(entry, 'author', 'Unknown')
@@ -125,9 +144,19 @@ class FeedBot:
         else:
             published = datetime.now().strftime('%Y-%m-%d %H:%M')
 
+        # Handle Instant View if rhash is provided
+        final_link = link
+        if rhash:
+            from urllib.parse import quote
+            encoded_url = quote(link)
+            final_link = f"https://t.me/iv?url={encoded_url}&rhash={rhash}"
+
+        # Create Markdown link
+        markdown_link = f"[Link]({final_link})"
+
         return template.format(
             title=title,
-            link=link,
+            link=markdown_link,
             author=author,
             published=published
         )

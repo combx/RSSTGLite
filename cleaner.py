@@ -35,7 +35,7 @@ def clean_url(url: str) -> str:
         ))
         
         # Remove trailing '?' if query is empty
-        if clean_url.endswith('?'):
+        if clean_url.endswith('?') and not clean_query:
             clean_url = clean_url[:-1]
             
         return clean_url

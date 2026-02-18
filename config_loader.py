@@ -13,6 +13,7 @@ class FeedConfig(BaseModel):
         default="📢 **{title}**\n\n{link}",
         description="Template for the message. Variables: {title}, {link}, {published}, {author}"
     )
+    rhash: Union[str, None] = Field(default=None, description="Optional: Instant View rhash for this feed")
 
     @validator('url', pre=True)
     def validate_url(cls, v):
@@ -24,6 +25,7 @@ class AppConfig(BaseModel):
     telegram_token: str = Field(..., description="Telegram Bot API Token")
     database_path: str = Field(default="data/feedbot.db", description="Path to SQLite database file")
     log_level: str = Field(default="INFO", description="Logging level (DEBUG, INFO, WARNING, ERROR)")
+    publication_delay: float = Field(default=2.5, description="Delay between messages in seconds to avoid rate limits")
     feeds: List[FeedConfig] = Field(default_factory=list, description="List of feeds to monitor")
 
     @classmethod

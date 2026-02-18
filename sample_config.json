@@ -2,6 +2,7 @@
   "telegram_token": "123456789:GlobalTokenDefaultsToThis",
   "database_path": "data/feedbot.db",
   "log_level": "INFO",
+  "publication_delay": 2.5,
   "feeds": [
     {
       "name": "Новости IT (Global Bot)",
@@ -22,7 +23,8 @@
       "name": "Личный Блог (Пример ID)",
       "url": "https://example.com/feed.xml",
       "target_chat_id": 12345678,
-      "message_template": "📝 **{title}**"
+      "message_template": "📝 **{title}**\n\n{link}",
+      "rhash": "830b4efac8a3d6"
     }
   ]
 }
