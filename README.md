@@ -51,6 +51,16 @@
 
 ### Локальный запуск (без Docker)
 
+Для запуска на сервере без Docker (systemd, venv) используйте автоматический скрипт:
+
+```bash
+./setup.sh
+```
+
+Подробная инструкция: [DEPLOYMENT_NO_DOCKER.md](DEPLOYMENT_NO_DOCKER.md)
+
+Или вручную:
+
 1.  Установите зависимости:
     ```bash
     pip install -r requirements.txt
