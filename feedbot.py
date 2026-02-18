@@ -12,6 +12,7 @@ import feedparser
 from config_loader import AppConfig, FeedConfig
 from database import Database
 from cleaner import clean_url
+import html
 
 # Configure logging
 logging.basicConfig(
@@ -133,7 +134,16 @@ class FeedBot:
 
     def format_message(self, template: str, entry: any, link: str, rhash: str = None) -> str:
         """Format the message using the template."""
-        title = getattr(entry, 'title', 'No Title')
+        raw_title = getattr(entry, 'title', 'No Title')
+        
+        # 1. Decode HTML entities (e.g. &nbsp; -> space, &quot; -> ")
+        decoded_title = html.unescape(raw_title)
+        
+        # 2. Escape Markdown special characters
+        # Telegram Markdown V1 sensitive chars: _ * [ `
+        escape_chars = '_*[`'
+        title = ''.join(f'\\{c}' if c in escape_chars else c for c in decoded_title)
+
         author = getattr(entry, 'author', 'Unknown')
         
         # Format published date
